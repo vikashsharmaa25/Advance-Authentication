@@ -1,12 +1,31 @@
 import React from "react";
-import { Form, Input, Button } from "antd";
+import { Form, Input, Button, message } from "antd";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { authFailure, authRequest, authSuccess } from "../redux/authSlice";
+import axiosInstance from "../service/url.service";
 
 const Login = () => {
-  const onFinish = (values) => {
-    console.log("Success:", values);
-    // Implement login logic here
+  const dispatch = useDispatch();
+
+  const onFinish = async (values) => {
+    try {
+      dispatch(authRequest());
+
+      const response = await axiosInstance.post("/api/user/login", {
+        email: values.email,
+        password: values.password,
+      });
+
+      dispatch(authSuccess(response.data));
+
+      message.success("Login successful!");
+    } catch (error) {
+      dispatch(authFailure(error.response?.data?.message || "Login failed"));
+
+      message.error("Login failed. Please check your credentials.");
+    }
   };
 
   return (
